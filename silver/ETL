@@ -1,3 +1,14 @@
+// =========================================================================================================
+ETL-silver
+=========================================================================================================  
+script purpose
+  -This  script performs ETL to populate the silver schema from bronze the bronze schema
+
+Actions performed:
+  -cleansed and transformed data in silver from bronze
+ =========================================================================================================
+  // 
+
 insert into silver.crm_cust(
 cst_id,
 cst_key,
