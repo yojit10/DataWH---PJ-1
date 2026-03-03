@@ -1,0 +1,113 @@
+insert into silver.crm_cust(
+cst_id,
+cst_key,
+cst_firstname,
+cst_lastname,
+cst_marital_status,
+cst_gndr ,
+cst_create_date )
+select
+cst_id,
+cst_key,
+trim(cst_firstname) as cst_firstname,
+trim(cst_lastname) as cst_lastname,
+case when 
+		trim(cst_marital_status) ='m' then 'married'
+	when 
+		trim(cst_marital_status)= 's' then 'single'
+	else 'n/a' 
+end cst_marital_status ,
+case when 
+		trim(cst_gndr) ='m' then 'male'
+	when 
+		trim(cst_gndr)= 'f' then 'female'
+	else 'n/a'
+end cst_gndr,
+cst_create_date
+from (
+select * ,
+row_number() over(partition by cst_id order by cst_create_date desc) as flag
+from bronze.crm_cust
+where cst_id is not null ) t
+where flag = 1;
+
+insert into silver.crm_prd (
+prd_id ,
+prd_key,
+prd_nm ,
+cat_id ,
+prd_cost ,
+prd_line ,
+prd_start_dt ,
+prd_end_dt )
+SELECT 
+prd_id ,
+replace(substring(prd_key ,1 ,5), '-', '_') as cat_id,
+substring(prd_key , 7 ,length(prd_key)) as prd_key,
+trim(prd_nm) as prd_nm ,
+prd_cost, 
+case 
+	when prd_line = 's' then 'soap'
+	when prd_line = 'm' then 'mop'
+    when prd_line = 'r' then 'roshae'
+    when prd_line = 't' then 'tree'
+    else 'luxu'
+end prd_line,
+prd_start_dt, 
+lead(prd_end_dt) over( partition by prd_key order by prd_end_dt ) as prd_end_dt
+ FROM bronze.crm_prd; 
+ 
+ SELECT 
+sls_ord_num,
+sls_prd_key,
+sls_cust_id,
+cast(sls_order_dt as date ) sls_order_dt,
+cast(sls_ship_dt as date ) sls_ship_dt,
+cast(sls_due_dt as date ) sls_due_dt,
+sls_quantity,
+case when sls_price <= 0 or sls_price is null 
+	 then abs(sls_price) / sls_quantity  
+else sls_price
+end sls_price,
+case when sls_sales != sls_quantity * abs(sls_price )or sls_sales is null
+	 then sls_quantity *abs(sls_price)
+else sls_sales
+end sls_sales
+from bronze.crm_sales;
+
+insert into silver.erp_cust
+(cid,
+bdate,
+gen)
+select 
+substring(cid,4,length(cid)) as cid,
+bdate,
+case when gen='m' then 'male'
+	when gen='f' then 'female'
+    else gen
+end gen
+from bronze.erp_cust;
+
+insert into silver.erp_loc (
+cid,
+CNTRY)
+select 
+replace(cid, '-', '') as cid ,
+case when trim(cntry) = 'de' then ' denmark'
+	 when trim(cntry) in ( 'us' , 'usa' ) then 'united states'
+     when trim(cntry) = '' or trim(cntry) is null then 'n/a'
+     else trim(cntry)
+end cntry
+ from bronze.erp_loc;
+ 
+ insert into	silver.erp_pxcat (
+id,
+cat,
+subcat,
+MAINTENANCE)
+select 
+id,
+cat,
+subcat,
+MAINTENANCE
+ from bronze.erp_pxcat;
