@@ -1,3 +1,17 @@
+// =========================================================================================================
+Datacheck - silver
+=========================================================================================================  
+script purpose
+  -This  script performs the various quality checks for data consistency , accuracy and  standardisation 
+   across the silver schema . it performs various checks like :
+      1. Null or duplicate primary key
+      2. unwanted spaces in the string
+      3. data standardisation and consistency
+      4. check for invalid dates
+      5. data consistency between related field
+ =========================================================================================================
+  // 
+
 -- to check for distinct values
 select  
 cst_id,
