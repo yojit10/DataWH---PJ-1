@@ -1,0 +1,75 @@
+-- for customer data from crm and erp
+
+drop view gold_cust;
+create view gold_cust as
+select distinct
+row_number() over (order by cst_key) as customer_key,
+	cu.cst_id as customerID,
+	cu.cst_key as customerKey,
+	cu.cst_firstname as firstname,
+	cu.cst_lastname  as lastname,
+    case when cu.cst_gndr = 'n/a' then cu.cst_gndr
+         when er.gen = 'null' then cu.cst_gndr
+         when cu.cst_gndr != 'n/a' then cu.cst_gndr
+         else coalesce(er.gen,'n/a') 
+	end as gender,
+    cu.cst_marital_status as maritalStatus,
+    coalesce(er.BDATE,0) as Bdate,
+    cu.cst_create_date as createDate,
+    coalesce(lo.cid,0) as cid,
+    coalesce(lo.cntry,'n/a') as country
+from silver.crm_cust cu
+left join silver.erp_cust er
+on cu.cst_key = er.cid 
+left join silver.erp_loc lo
+on cu.cst_key = lo.cid ;
+
+select * from gold_cust;
+
+-- for product data from crm and erp
+
+drop view gold_product;
+create view warehouse.gold_product as
+select 
+row_number() over(order by prd_key) as product_key,
+	pr.prd_id as product_id ,
+	pr.prd_key as product_num,
+	pr.prd_nm as product_name,
+	pr.cat_id as category_name,
+	pr.prd_line as typess,
+    ca.CAT ,
+    ca.subcat,
+    ca.MAINTENANCE,
+    pr.prd_start_dt as startdate,
+    pr.prd_cost as cost
+from silver.crm_prd pr
+left join silver.erp_pxcat ca
+on pr.prd_key = ca.ID;
+
+select*from warehouse.gold_product;
+
+-- sales data to prd and customer
+drop view gold_sales;
+create view warehouse.gold_sales as
+select 
+go.product_key,
+so.sls_ord_num as ordernumber,
+go.product_key as productkey,
+case when cu.customerid is null then so.sls_cust_id
+	 else cu.customerid
+end as customerid,
+go.category_name as categoryname,
+go.subcat,
+so.sls_order_dt as orderdate,
+so.sls_ship_dt as shipdate,
+so.sls_due_dt as duedate,
+so.sls_quantity as quantity,
+so.sls_price as price,
+so.sls_sales as sales
+from silver.crm_sales so
+left join gold_product go
+on so.sls_prd_key = go.product_name
+left join gold_cust cu
+on so.sls_cust_id = cu.customerID;
+
+select * from warehouse.gold_sales;
