@@ -1,3 +1,17 @@
+// =========================================================================================================
+ETL- gold
+=========================================================================================================  
+script purpose
+  -This  script performs ETL to populate the gold schema from silver schema
+  - Creates a view for the business to take real time action and shae insights
+
+Actions performed:
+  -cleansed and transformed data in gold from bronze
+  - proivde business ready date 
+  - join the common column from sales to crm and erp 
+  - in crm and erp between join products and customers witht the available data.
+ =========================================================================================================
+
 -- for customer data from crm and erp
 
 drop view gold_cust;
