@@ -1,3 +1,14 @@
+// =========================================================================================================
+Datacheck -  gold
+=========================================================================================================  
+script purpose
+  -This  script performs the various quality checks for data consistency , accuracy and  standardisation 
+   across the silver schema . it performs various checks like :
+      1. Null or duplicate primary key
+      2. unwanted spaces in the string
+      3. data standardisation and consistency
+ =========================================================================================================
+  // 
 
 -- check for gold layer
  
@@ -7,3 +18,5 @@ on g.productkey = c.customer_key
 left join gold_product p
 on g.productkey = p.product_key
 where customer_key is null;
+
+select disitinct customerid from gold_sales;
