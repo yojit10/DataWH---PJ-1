@@ -1,0 +1,9 @@
+
+-- check for gold layer
+ 
+ select * from warehouse.gold_sales g
+left join gold_cust c
+on g.productkey = c.customer_key
+left join gold_product p
+on g.productkey = p.product_key
+where customer_key is null;
