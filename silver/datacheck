@@ -37,3 +37,54 @@ from bronze.crm_prd;
 -- check for invalid dates
 select * from bronze.crm_prd
 where prd_end_dt < prd_start_dt;
+
+-- to check for distinct values
+select  
+sls_cust_id,
+count(*) as totalcount
+FROM bronze.crm_sales
+group by sls_cust_id  
+having count(*)>1 or sls_cust_id is null;
+
+-- check for unwanted spaces
+select cst_firstname
+FROM bronze.crm_sales
+where cst_firstname != trim(cst_firstname);
+
+-- check for nulls or negatives
+select cst_key
+FROM bronze.crm_sales
+where cst_key is null or cst_key < 0;
+
+-- data standardisation and consistency
+select distinct prd_line
+from bronze.crm_prd;
+ 
+-- check for invalid dates
+select * FROM bronze.crm_sales
+where sls_order_dt> sls_ship_dt or sls_order_dt > sls_due_dt ;
+
+-- data consistency between sales , quantity , price
+select sls_sales ,
+sls_quantity
+sls_price
+from bronze.crm_sales
+where sls_sales != sls_quantity*sls_price
+or sls_price is null or sls_quantity is null or sls_sales is null;
+
+select distinct
+sls_sales ,
+sls_quantity,
+sls_price,
+case when sls_sales != sls_quantity * abs(sls_price )or sls_sales is null
+	 then sls_quantity *abs(sls_price)
+else sls_sales
+end sls_sales,
+case when sls_price <= 0 or sls_price is null 
+	 then abs(sls_price) / sls_quantity  
+else sls_price
+end sls_price
+from bronze.crm_sales
+where sls_sales != sls_quantity*sls_price;
+
+
